@@ -104,21 +104,22 @@ def get_director(nombre_director: str):
         "peliculas": peliculas
     }
 
-# Función que calcula la similitud numérica entre dos valores dados. Toma como entrada un valor de referencia y un valor a comparar
+
+# Función que calcula la similitud numérica entre dos valores dados
 def calcular_similitud_numerica(valor_referencia, valor):
     return 1 / (1 + abs(valor_referencia - valor))
 
-# Función que calcula la similitud entre dos textos utilizando el enfoque de TF-IDF (Term Frequency-Inverse Document Frequency) y la medida de similitud del coseno.
+# Función que calcula la similitud entre dos textos utilizando TF-IDF y la similitud coseno
 def calcular_similitud_texto(texto_referencia, texto):
     tfidf_vectorizer = TfidfVectorizer()
     tfidf_matrix = tfidf_vectorizer.fit_transform([texto_referencia, texto])
     similitud_matriz = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix)
     return similitud_matriz[0, 1]
 
-# Función que calcula la similitud entre dos conjuntos de géneros cinematográficos.
+# Función que calcula la similitud entre dos conjuntos de géneros cinematográficos
 def calcular_similitud_generos(generos_referencia, generos):
     if pd.isnull(generos_referencia) or pd.isnull(generos):
-        return 0.0  # Retorna 0 si alguna de las columnas es nula
+        return 0.0
     
     generos_referencia = set(generos_referencia.split('|'))
     generos = set(generos.split('|'))
@@ -129,9 +130,11 @@ def calcular_similitud_generos(generos_referencia, generos):
 # Preprocesamiento de texto: Convertir títulos en vectores numéricos
 vectorizer = CountVectorizer()
 titulo_vectores = vectorizer.fit_transform(df['title'].fillna(''))
+
+# Calcular la similitud coseno entre los títulos
 titulo_similitud = cosine_similarity(titulo_vectores)
 
-# Crear una matriz dispersa para almacenar la similitud del coseno
+# Crear una matriz dispersa CSR para almacenar la similitud coseno
 titulo_similitud_sparse = csr_matrix(titulo_similitud)
 
 @app.get('/recomendacion')
@@ -164,6 +167,7 @@ def recomendacion(titulo: str):
         return peliculas_recomendadas
     except IndexError:
         return 'Película no encontrada'
+
 
 
 if __name__ == "__main__":
