@@ -1,11 +1,13 @@
 <p align="center">
   <img src="https://github.com/Streakuwu/PI_01_DATA/assets/117231675/986f0146-43bc-4fd7-9f41-c06a3d22854d" alt="Sublime's custom image"/>
 </p>
+
 # <h2 align=center> **PROYECTO INDIVIDUAL Nº1 - Gaston Re** </h2>
 
 <p align="center">
   <img src="https://github.com/Streakuwu/PI_01_DATA/assets/117231675/f9cb31c6-6697-4e30-b066-f6e776c28b96" alt="Sublime's custom image"/>
 </p>
+
 # <h1 align=center>**`Machine Learning Operations (MLOps)`**</h1>
 
 ### Proceso - Descripción del problema (Contexto y rol a desarrollar)
@@ -118,10 +120,10 @@ def get_director(nombre_director: str):
     }
 ````
 *`encontraremos este proceso en el archivo main.py`*
-<br/>
+
 ###Deployment
 Encontraremos la API desplegada con Render :tw-1f449: [Deploy](https://deploy-render-api.onrender.com/docs)
-<br/>
+
 ### EDA (Exploratory Data Analysis-EDA)
 Ya los datos están limpios, ahora es tiempo de investigar las relaciones que hay entre las variables de los datasets, ver si hay outliers o anomalías (que no tienen que ser errores necesariamente 👀 ), y ver si hay algún patrón interesante que valga la pena explorar en un análisis posterior. Las nubes de palabras dan una buena idea de cuáles palabras son más frecuentes en los títulos, ¡podría ayudar al sistema de recomendación! En esta ocasión vamos a pedirte que no uses librerías para hacer EDA automático ya que queremos que pongas en practica los conceptos y tareas involucrados en el mismo. 
 
@@ -151,4 +153,3 @@ def recomendacion(titulo: str):
 *`encontraremos este proceso en el archivo main.py`*
 
 *Con esto finalizamos el Proyecto individual Nº1 de la carrera Data Science Gracias por su atención*
-<br/>
