@@ -138,7 +138,7 @@ En esta parte relize distintos tipos de analisis de datos los cuales son:
 - Diagrama De Caja
 - Nubes De Palabras
 
-*`encontraremos este proceso en el archivo EDA.ipynb`*
+*`encontraremos este analisis en el archivo EDA.ipynb`*
 
 ### ML (Machine learning)
 ##### Sistema de recomendación:
