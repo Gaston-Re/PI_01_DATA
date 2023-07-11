@@ -123,8 +123,8 @@ def calcular_similitud_generos(generos_referencia, generos):
     return intersection / union
 
 # Funcion de recomendacion
-@app.get('/pelicula')
-def recomendacion(titulo, df):
+@app.get('/recomendacion')
+def recomendacion(titulo: str):
     # Procesamiento de texto: Convertir títulos en vectores numéricos
     vectorizer = CountVectorizer()
     titulo_vectores = vectorizer.fit_transform(df['title'].fillna(''))
