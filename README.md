@@ -8,7 +8,7 @@
   <img src="https://github.com/Streakuwu/PI_01_DATA/assets/117231675/f9cb31c6-6697-4e30-b066-f6e776c28b96" alt="Sublime's custom image"/>
 </p>
 
-# <h1 align=center>**`Machine Learning Operations (MLOps)`**</h1>
+# <h3 align=center>**`Machine Learning Operations (MLOps)`**</h3>
 
 ### Proceso - Descripción del problema (Contexto y rol a desarrollar)
 En este proyecto realizare un proceso de ETL(Extraction, Transformation and Loading), creacion de una API (Application Programming Interface), EDA (Exploratory Data Analysis) y terminaremos con un modelo ML (Machine learning) de recomendacion de peliculas.
