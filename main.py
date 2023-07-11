@@ -106,11 +106,11 @@ def get_director(nombre_director: str):
 
 
 # Crea una muestra aleatoria con 5000 filas del dataset
-muestra_aleatoria = df.sample(5000)
+muestra = df.head(10000)
 
 # Crea la matriz de características TF-IDF
 tfidf = TfidfVectorizer(stop_words='english')
-tfidf_matrix = tfidf.fit_transform(muestra_aleatoria['overview'].fillna(''))
+tfidf_matrix = tfidf.fit_transform(muestra['overview'].fillna(''))
 
 # Calcula la similitud coseno entre todas las descripciones
 cosine_similarity = linear_kernel(tfidf_matrix, tfidf_matrix)
@@ -129,27 +129,13 @@ def calcular_similitud_generos(generos_referencia, generos):
 # Crea la función de recomendación
 @app.get("/recomendacion")
 def recomendacion(titulo: str):
-    if titulo not in df['title'].values:
-        return "Película no encontrada en el dataset original"
-
-    # Verificar si la película ya está en la muestra aleatoria
-    if titulo not in muestra_aleatoria['title'].values:
-        # Obtener la fila correspondiente a la película en el DataFrame original
-        pelicula = df[df['title'] == titulo].iloc[0]
-
-        # Agregar la fila de la película al DataFrame de muestra aleatoria
-        muestra_aleatoria = muestra_aleatoria.append(pelicula)
-
-        # Actualizar la matriz TF-IDF y la similitud coseno
-        tfidf_matrix = tfidf.fit_transform(muestra_aleatoria['overview'].fillna(''))
-        cosine_similarity = linear_kernel(tfidf_matrix, tfidf_matrix)
-
-    idx = muestra_aleatoria[muestra_aleatoria['title'] == titulo].index[0]
+    # Busca el id de la pelicula en la muestra
+    idx = muestra[muestra['title'] == titulo].index[0]
     sim_cosine = cosine_similarity[idx]
 
     # Calcula la similitud de géneros para la película de referencia
-    generos_referencia = muestra_aleatoria.loc[idx, 'genres']
-    sim_generos = muestra_aleatoria['genres'].apply(lambda x: calcular_similitud_generos(generos_referencia, x))
+    generos_referencia = muestra.loc[idx, 'genres']
+    sim_generos = muestra['genres'].apply(lambda x: calcular_similitud_generos(generos_referencia, x))
 
     # Combina la similitud coseno y la similitud de géneros
     sim_total = sim_cosine + sim_generos
@@ -158,7 +144,7 @@ def recomendacion(titulo: str):
     similar_indices = sim_total.argsort()[::-1][1:6]
 
     # Obtiene los títulos de las películas similares
-    similar_movies = muestra_aleatoria['title'].iloc[similar_indices].tolist()
+    similar_movies = muestra['title'].iloc[similar_indices].tolist()
 
     return similar_movies
 
