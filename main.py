@@ -106,7 +106,7 @@ def get_director(nombre_director: str):
 
 
 # Crea una muestra aleatoria con 5000 filas del dataset
-muestra_aleatoria = df.head(5000)
+muestra_aleatoria = df.sample(5000)
 
 # Crea la matriz de características TF-IDF
 tfidf = TfidfVectorizer(stop_words='english')
