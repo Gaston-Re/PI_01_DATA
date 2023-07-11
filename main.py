@@ -129,6 +129,21 @@ def calcular_similitud_generos(generos_referencia, generos):
 # Crea la función de recomendación
 @app.get("/recomendacion")
 def recomendacion(titulo: str):
+    if titulo not in df['title'].values:
+        return "Película no encontrada en el dataset original"
+
+    # Verificar si la película ya está en la muestra aleatoria
+    if titulo not in muestra_aleatoria['title'].values:
+        # Obtener la fila correspondiente a la película en el DataFrame original
+        pelicula = df[df['title'] == titulo].iloc[0]
+
+        # Agregar la fila de la película al DataFrame de muestra aleatoria
+        muestra_aleatoria = muestra_aleatoria.append(pelicula)
+
+        # Actualizar la matriz TF-IDF y la similitud coseno
+        tfidf_matrix = tfidf.fit_transform(muestra_aleatoria['overview'].fillna(''))
+        cosine_similarity = linear_kernel(tfidf_matrix, tfidf_matrix)
+
     idx = muestra_aleatoria[muestra_aleatoria['title'] == titulo].index[0]
     sim_cosine = cosine_similarity[idx]
 
