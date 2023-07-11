@@ -5,7 +5,7 @@ import  uvicorn
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
-from scipy.sparse import csr_matrix
+from sklearn.metrics.pairwise import linear_kernel
 
 # Definición de la aplicación FastAPI
 app = FastAPI()
@@ -105,69 +105,47 @@ def get_director(nombre_director: str):
     }
 
 
-# Función que calcula la similitud numérica entre dos valores dados
-def calcular_similitud_numerica(valor_referencia, valor):
-    return 1 / (1 + abs(valor_referencia - valor))
+# Crea una muestra aleatoria con 5000 filas del dataset
+muestra_aleatoria = df.head(5000)
 
-# Función que calcula la similitud entre dos textos utilizando TF-IDF y la similitud coseno
-def calcular_similitud_texto(texto_referencia, texto):
-    tfidf_vectorizer = TfidfVectorizer()
-    tfidf_matrix = tfidf_vectorizer.fit_transform([texto_referencia, texto])
-    similitud_matriz = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix)
-    return similitud_matriz[0, 1]
+# Crea la matriz de características TF-IDF
+tfidf = TfidfVectorizer(stop_words='english')
+tfidf_matrix = tfidf.fit_transform(muestra_aleatoria['overview'].fillna(''))
+
+# Calcula la similitud coseno entre todas las descripciones
+cosine_similarity = linear_kernel(tfidf_matrix, tfidf_matrix)
 
 # Función que calcula la similitud entre dos conjuntos de géneros cinematográficos
 def calcular_similitud_generos(generos_referencia, generos):
     if pd.isnull(generos_referencia) or pd.isnull(generos):
         return 0.0
-    
+
     generos_referencia = set(generos_referencia.split('|'))
     generos = set(generos.split('|'))
     intersection = len(generos_referencia.intersection(generos))
     union = len(generos_referencia.union(generos))
     return intersection / union
 
-# Preprocesamiento de texto: Convertir títulos en vectores numéricos
-vectorizer = CountVectorizer()
-titulo_vectores = vectorizer.fit_transform(df['title'].fillna(''))
-
-# Calcular la similitud coseno entre los títulos
-titulo_similitud = cosine_similarity(titulo_vectores)
-
-# Crear una matriz dispersa CSR para almacenar la similitud coseno
-titulo_similitud_sparse = csr_matrix(titulo_similitud)
-
-@app.get('/recomendacion')
+# Crea la función de recomendación
+@app.get("/recomendacion")
 def recomendacion(titulo: str):
-    try:
-        # Encontrar el índice de la película de referencia
-        indice_referencia = df[df['title'] == titulo].index[0]
+    idx = muestra_aleatoria[muestra_aleatoria['title'] == titulo].index[0]
+    sim_cosine = cosine_similarity[idx]
 
-        # Obtener las similitudes de géneros para la película de referencia
-        generos_referencia = df.loc[indice_referencia, 'genres']
-        if pd.notnull(generos_referencia):
-            similitudes_generos = df['genres'].apply(lambda x: calcular_similitud_generos(generos_referencia, x))
-        else:
-            # Si no hay datos en 'genres', utilizar similitud en 'overview'
-            overview_referencia = df.loc[indice_referencia, 'overview']
-            similitudes_generos = df['overview'].apply(lambda x: calcular_similitud_texto(overview_referencia, x))
+    # Calcula la similitud de géneros para la película de referencia
+    generos_referencia = muestra_aleatoria.loc[idx, 'genres']
+    sim_generos = muestra_aleatoria['genres'].apply(lambda x: calcular_similitud_generos(generos_referencia, x))
 
-        # Si no hay datos en 'genres' y 'overview', utilizar similitud en 'vote_average'
-        if similitudes_generos.isnull().all():
-            vote_average_referencia = df.loc[indice_referencia, 'vote_average']
-            similitudes_generos = df['vote_average'].apply(lambda x: calcular_similitud_numerica(vote_average_referencia, x))
+    # Combina la similitud coseno y la similitud de géneros
+    sim_total = sim_cosine + sim_generos
 
-        # Calcular la similitud total combinando la similitud en títulos y géneros/overview/vote_average
-        similitud_total = titulo_similitud_sparse[indice_referencia].toarray().flatten() + similitudes_generos
+    # Obtiene los índices de las películas similares
+    similar_indices = sim_total.argsort()[::-1][1:6]
 
-        # Ordenar las películas según la similitud total y obtener las 5 principales recomendaciones
-        indices_recomendadas = similitud_total.argsort()[:-6:-1]
-        peliculas_recomendadas = df.iloc[indices_recomendadas]['title'].tolist()
+    # Obtiene los títulos de las películas similares
+    similar_movies = muestra_aleatoria['title'].iloc[similar_indices].tolist()
 
-        return peliculas_recomendadas
-    except IndexError:
-        return 'Película no encontrada'
-
+    return similar_movies
 
 
 if __name__ == "__main__":
