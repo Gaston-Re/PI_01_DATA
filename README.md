@@ -22,7 +22,6 @@ Vas a sus datos y te das cuenta que la madurez de los mismos es poca (ok, es nul
 Debes empezar desde 0, haciendo un trabajo rápido de Data Engineer y tener un MVP (Minimum Viable Product) para el cierre del proyecto! Tu cabeza va a explotar 🤯, pero al menos sabes cual es, conceptualmente, el camino que debes de seguir ❗. Así que te espantas los miedos y te pones manos a la obra 💪
 
 ### ETL (Extraction, Transformation and Loading)
-<br/>
 Descripcion De Mis Datos:
 **Característica**\Descripción
 - **adult**: Indica si la película tiene califiación X, exclusiva para adultos.
@@ -63,7 +62,6 @@ Descripcion De Mis Datos:
 5. Algunos campos, como belongs_to_collection, production_companies y otros (ver diccionario de datos) están anidados, esto es o bien tienen un diccionario o una lista como valores en cada fila, ¡deberán desanidarlos para poder y unirlos al dataset de nuevo hacer alguna de las consultas de la API! O bien buscar la manera de acceder a esos datos sin desanidarlos.
 
 *`encontraremos este proceso en el archivo Datos-ETL.ipynb`*
-<br/>
 ### API (Application Programming Interface)
 **Desarrollo**: Propones disponibilizar los datos de la empresa usando el framework FastAPI. Las consultas que propones son las siguientes:
 
