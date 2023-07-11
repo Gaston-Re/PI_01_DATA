@@ -5,6 +5,7 @@ import  uvicorn
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
+from scipy.sparse import csr_matrix
 
 # Definición de la aplicación FastAPI
 app = FastAPI()
@@ -128,9 +129,10 @@ def calcular_similitud_generos(generos_referencia, generos):
 # Preprocesamiento de texto: Convertir títulos en vectores numéricos
 vectorizer = CountVectorizer()
 titulo_vectores = vectorizer.fit_transform(df['title'].fillna(''))
+titulo_similitud = cosine_similarity(titulo_vectores)
 
-# Calcular la similitud del coseno entre los títulos
-similitud_titulos = cosine_similarity(titulo_vectores)
+# Crear una matriz dispersa para almacenar la similitud del coseno
+titulo_similitud_sparse = csr_matrix(titulo_similitud)
 
 @app.get('/recomendacion')
 def recomendacion(titulo: str):
@@ -153,7 +155,7 @@ def recomendacion(titulo: str):
             similitudes_generos = df['vote_average'].apply(lambda x: calcular_similitud_numerica(vote_average_referencia, x))
 
         # Calcular la similitud total combinando la similitud en títulos y géneros/overview/vote_average
-        similitud_total = similitud_titulos[indice_referencia] + similitudes_generos
+        similitud_total = titulo_similitud_sparse[indice_referencia].toarray().flatten() + similitudes_generos
 
         # Ordenar las películas según la similitud total y obtener las 5 principales recomendaciones
         indices_recomendadas = similitud_total.argsort()[:-6:-1]
