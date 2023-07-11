@@ -116,47 +116,52 @@ def calcular_similitud_texto(texto_referencia, texto):
 
 # Función que calcula la similitud entre dos conjuntos de géneros cinematográficos.
 def calcular_similitud_generos(generos_referencia, generos):
+    if pd.isnull(generos_referencia) or pd.isnull(generos):
+        return 0.0  # Retorna 0 si alguna de las columnas es nula
+    
     generos_referencia = set(generos_referencia.split('|'))
     generos = set(generos.split('|'))
     intersection = len(generos_referencia.intersection(generos))
     union = len(generos_referencia.union(generos))
     return intersection / union
 
-# Funcion de recomendacion
+# Preprocesamiento de texto: Convertir títulos en vectores numéricos
+vectorizer = CountVectorizer()
+titulo_vectores = vectorizer.fit_transform(df['title'].fillna(''))
+
+# Calcular la similitud del coseno entre los títulos
+similitud_titulos = cosine_similarity(titulo_vectores)
+
 @app.get('/recomendacion')
 def recomendacion(titulo: str):
-    # Procesamiento de texto: Convertir títulos en vectores numéricos
-    vectorizer = CountVectorizer()
-    titulo_vectores = vectorizer.fit_transform(df['title'].fillna(''))
+    try:
+        # Encontrar el índice de la película de referencia
+        indice_referencia = df[df['title'] == titulo].index[0]
 
-    # Calcular la similitud del coseno entre los títulos
-    similitud_titulos = cosine_similarity(titulo_vectores)
+        # Obtener las similitudes de géneros para la película de referencia
+        generos_referencia = df.loc[indice_referencia, 'genres']
+        if pd.notnull(generos_referencia):
+            similitudes_generos = df['genres'].apply(lambda x: calcular_similitud_generos(generos_referencia, x))
+        else:
+            # Si no hay datos en 'genres', utilizar similitud en 'overview'
+            overview_referencia = df.loc[indice_referencia, 'overview']
+            similitudes_generos = df['overview'].apply(lambda x: calcular_similitud_texto(overview_referencia, x))
 
-    # Encontrar el índice de la película de referencia
-    indice_referencia = df[df['title'] == titulo].index[0]
+        # Si no hay datos en 'genres' y 'overview', utilizar similitud en 'vote_average'
+        if similitudes_generos.isnull().all():
+            vote_average_referencia = df.loc[indice_referencia, 'vote_average']
+            similitudes_generos = df['vote_average'].apply(lambda x: calcular_similitud_numerica(vote_average_referencia, x))
 
-    # Obtener las similitudes de géneros para la película de referencia
-    generos_referencia = df.loc[indice_referencia, 'genres']
-    if pd.notnull(generos_referencia):
-        similitudes_generos = df['genres'].apply(lambda x: calcular_similitud_generos(generos_referencia, x))
-    else:
-        # Si no hay datos en 'genres', utilizar similitud en 'overview'
-        overview_referencia = df.loc[indice_referencia, 'overview']
-        similitudes_generos = df['overview'].apply(lambda x: calcular_similitud_texto(overview_referencia, x))
+        # Calcular la similitud total combinando la similitud en títulos y géneros/overview/vote_average
+        similitud_total = similitud_titulos[indice_referencia] + similitudes_generos
 
-    # Si no hay datos en 'genres' y 'overview', utilizar similitud en 'vote_average'
-    if similitudes_generos.isnull().all():
-        vote_average_referencia = df.loc[indice_referencia, 'vote_average']
-        similitudes_generos = df['vote_average'].apply(lambda x: calcular_similitud_numerica(vote_average_referencia, x))
+        # Ordenar las películas según la similitud total y obtener las 5 principales recomendaciones
+        indices_recomendadas = similitud_total.argsort()[:-6:-1]
+        peliculas_recomendadas = df.iloc[indices_recomendadas]['title'].tolist()
 
-    # Calcular la similitud total combinando la similitud en títulos y géneros/overview/vote_average
-    similitud_total = similitud_titulos[indice_referencia] + similitudes_generos
-
-    # Ordenar las películas según la similitud total y obtener las 5 principales recomendaciones
-    indices_recomendadas = similitud_total.argsort()[:-6:-1]
-    peliculas_recomendadas = df.iloc[indices_recomendadas]['title'].tolist()
-
-    return peliculas_recomendadas
+        return peliculas_recomendadas
+    except IndexError:
+        return 'Película no encontrada'
 
 
 if __name__ == "__main__":
